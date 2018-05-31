@@ -27,11 +27,15 @@ img {
 	text-align: center;
 	display: inline-block;
 }
-#month-handle {
-	width: 6em !important;
+#days-handle {
+	width: 2em !important;
+	margin-left: -1em;
+}
+#month-handle, #monthStart-handle, #monthEnd-handle {
+	width: 5em !important;
 	margin-left: -3em;
 }
-#mapDates {
+#mapDates, #graphDates {
 	width: 60%;
 	margin: 0.5em;
 	float: left;
@@ -69,6 +73,12 @@ table th, table td {
 .jTab {
 	overflow: auto;
 }
+.ui-tabs-vertical { width: 75%; min-height: 8em; }
+.ui-tabs-vertical .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 40%; }
+.ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0; }
+.ui-tabs-vertical .ui-tabs-nav li a { display:block; }
+.ui-tabs-vertical .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; }
+.ui-tabs-vertical .ui-tabs-panel { padding: 1em; float: right; width: 55%;}
 .caption {
 	background: rgba(255,255,255,0.6);
 	position: absolute;
@@ -79,6 +89,7 @@ table th, table td {
 }
 figure {
 	position: relative;
+	margin: 0;
 }
 figure i {
 	position: absolute;
@@ -90,6 +101,9 @@ figure i {
 figure:hover i {
 	color: #FFFD00;
 }
+figcaption {
+	background-color: #fff;
+}
 #tsHeader {
 	display: none;
 }
@@ -99,6 +113,10 @@ figure:hover i {
 	clear: both;
 	margin-bottom: 1em;
 }
+.loading {
+  background: transparent url('/includes/images/Spinner-1s-200px.gif') center no-repeat;
+}
+.loading img {min-height:200px;}
 
 @media screen and (min-width:50em) {
 #stationDetails {
@@ -111,6 +129,10 @@ figure:hover i {
 .leftCol33 {
 	width: 33%;
 	float: left;
+}
+.leftCol33:nth-child(3n+1)
+{
+	clear:left;
 }
 .rightCol50 {
 	width: 50%;

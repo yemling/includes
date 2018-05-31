@@ -22,8 +22,8 @@ wrUtils.init = function()
 }
 wrUtils.getSpiDates = function()
 {
-	var startYear = 2005;
-	var endYear = 2012;
+	var startYear = 2010;
+	var endYear = 2018;
 	var dates = '';
 	var counter = 0;
 	var lastComma = ((endYear - startYear+1) * 12) - 1;
@@ -169,9 +169,9 @@ wrUtils.removeBlanks = function (imgWidth, imgHeight, context) {
         append($croppedCanvas);
     console.log(cropTop, cropBottom, cropLeft, cropRight);
 };
+wrUtils.autocase = function(str) {
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 
-
-
-
+}
 
 $(document).ready(wrUtils.init);
