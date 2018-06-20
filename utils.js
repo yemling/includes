@@ -1,52 +1,66 @@
 var wrUtils = {};
+
 wrUtils.init = function()
 {
-	var $loading = $('#bowlG').hide();
-    //ajax feedback
-    $(document)
-        .ajaxStart(function() {
-            $loading.fadeIn();
-            $('#loadingBackground').addClass('loading');
-        })
-        .ajaxStop(function() {
-            $loading.fadeOut();
-            $('#loadingBackground').removeClass('loading');
-    });
-	wrUtils.dates = wrUtils.getSpiDates();
-	wrUtils.mapDates = wrUtils.dates.split(',');
-	if (typeof ihuMap != 'undefined')
-		{
-			ihuMap.spiLayerOptions.month = wrUtils.formatDate(0).yearMon;
-		}
 	return;
 }
 wrUtils.getSpiDates = function()
 {
-	var startYear = 2010;
-	var endYear = 2018;
-	var dates = '';
-	var counter = 0;
-	var lastComma = ((endYear - startYear+1) * 12) - 1;
-	for (var i = startYear; i <= endYear; i++)
+	if(typeof wrUtils.startDate === 'undefined')
 	{
-		for (var m = 1; m <= 12; m++)
+		wrUtils.startDate = new Date("2010-01-01");
+	}
+	if(typeof wrUtils.endDate === 'undefined')
+	{
+		wrUtils.endDate = new Date();
+	}
+	wrUtils.startYear = wrUtils.startDate.getFullYear();
+	wrUtils.endYear = wrUtils.endDate.getFullYear();
+	//make a date array for sliders based on station date data.
+	var dates = [];
+	var lastComma = ((wrUtils.endYear - wrUtils.startYear+1) * 12) - 1;
+	for (var i = wrUtils.startYear; i <= wrUtils.endYear; i++)
+	{
+		var startMonth = 1;
+		var endMonth = 12;
+		if(i === wrUtils.startYear)
+		{
+			startMonth = wrUtils.startDate.getMonth()+1;
+		}
+		if(i === wrUtils.endYear)
+		{
+			endMonth = wrUtils.endDate.getMonth()+1;
+		}
+		for (var m = startMonth; m <= endMonth; m++)
 		{
 			if (m < 10)
 			{
 				m = '0'+m;
 			}
-			dates+= i + '-' + m + '-01T00:00:00.000Z';
-			if(counter != lastComma)	
-			{
-				dates += ',';
-			}
-			counter = counter + 1;
+			dates.push(i + '-' + m + '-01T00:00:00.000Z');
 		}
 	}
+	wrUtils.mapDates = dates;
+	wrUtils.dates = wrUtils.mapDates.join(',');
 	return dates;
 }
 
+wrUtils.getDaysBetween = function() {
+  //Get 1 day in milliseconds
+  var one_day=1000*60*60*24;
+  // Convert both dates to milliseconds
+  var date1_ms = wrUtils.startDate.getTime();
+  var date2_ms = wrUtils.endDate.getTime();
+
+  // Calculate the difference in milliseconds
+  var difference_ms = date2_ms - date1_ms;
+    
+  // Convert back to days and return
+  return Math.round(difference_ms/one_day); 
+}
+
 wrUtils.getParameterByName = function(name, url) {
+	//get the url parameters by name
     if (!url) url = window.location.href;
     name = name.replace(/[\[\]]/g, "\\$&");
     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
@@ -63,6 +77,7 @@ wrUtils.randomColor = function()
 
 wrUtils.formatDate = function(index)
 {
+	//different date formats for different uses.
 	var dateStruct = {};
 	//only showing the date not the whole timestamp.
 	dateStruct.fullDate = wrUtils.mapDates[index].substring(0,wrUtils.mapDates[index].indexOf('T'));
@@ -75,103 +90,47 @@ wrUtils.formatDate = function(index)
 }
 wrUtils.getMapLayer = function(arr,layerName)
 {
-	return $.grep(arr, function(obj){return obj.name === layerName;})[0];
-}
-wrUtils.trimImage = function()
-{
-	var imgSrc = $(this).attr('src');
-	var img = new Image(),
-		$canvas = $("<canvas>"),
-		canvas = $canvas[0],
-		context;
-	img.crossOrigin = "anonymous";
-	img.onload = function () {
-		$canvas.attr({ width: this.width, height: this.height });
-		context = canvas.getContext("2d");
-		if (context) {
-			context.drawImage(this, 0, 0);
-			$("body").append("<p>original image:</p>").append($canvas);
-		
-			wrUtils.removeBlanks(this.width, this.height. context);
-		} else {
-			alert('Get a real browser!');
-		}
-	};
-	img.src = imgSrc;
+	//probably don't need this here, but might be useful in the future, to get the array item when given a name to match on
+	return jQuery.grep(arr, function(obj){return obj.name === layerName;})[0];
 }
 
-
-wrUtils.removeBlanks = function (imgWidth, imgHeight, context) {
-    var imageData = context.getImageData(0, 0, imgWidth, imgHeight),
-        data = imageData.data,
-        getRBG = function(x, y) {
-            var offset = imgWidth * y + x;
-            return {
-                red:     data[offset * 4],
-                green:   data[offset * 4 + 1],
-                blue:    data[offset * 4 + 2],
-                opacity: data[offset * 4 + 3]
-            };
-        },
-        isWhite = function (rgb) {
-            // many images contain noise, as the white is not a pure #fff white
-            return rgb.red > 200 && rgb.green > 200 && rgb.blue > 200;
-        },
-        scanY = function (fromTop) {
-            var offset = fromTop ? 1 : -1;
-            
-            // loop through each row
-            for(var y = fromTop ? 0 : imgHeight - 1; fromTop ? (y < imgHeight) : (y > -1); y += offset) {
-                
-                // loop through each column
-                for(var x = 0; x < imgWidth; x++) {
-                    var rgb = getRBG(x, y);
-                    if (!isWhite(rgb)) {
-                        return y;                        
-                    }      
-                }
-            }
-            return null; // all image is white
-        },
-        scanX = function (fromLeft) {
-            var offset = fromLeft? 1 : -1;
-            
-            // loop through each column
-            for(var x = fromLeft ? 0 : imgWidth - 1; fromLeft ? (x < imgWidth) : (x > -1); x += offset) {
-                
-                // loop through each row
-                for(var y = 0; y < imgHeight; y++) {
-                    var rgb = getRBG(x, y);
-                    if (!isWhite(rgb)) {
-                        return x;                        
-                    }      
-                }
-            }
-            return null; // all image is white
-        };
-    
-    var cropTop = scanY(true),
-        cropBottom = scanY(false),
-        cropLeft = scanX(true),
-        cropRight = scanX(false),
-        cropWidth = cropRight - cropLeft,
-        cropHeight = cropBottom - cropTop;
-    
-    var $croppedCanvas = $("<canvas>").attr({ width: cropWidth, height: cropHeight });
-    
-    // finally crop the guy
-    $croppedCanvas[0].getContext("2d").drawImage(canvas,
-        cropLeft, cropTop, cropWidth, cropHeight,
-        0, 0, cropWidth, cropHeight);
-    
-    $("body").
-        append("<p>same image with white spaces cropped:</p>").
-        append($croppedCanvas);
-    console.log(cropTop, cropBottom, cropLeft, cropRight);
-};
 wrUtils.autocase = function(str) {
+	//make all capital string have initial caps 
         return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 
 }
-
-$(document).ready(wrUtils.init);
+wrUtils.pageLoading = function()
+{
+	var $loading = jQuery('#bowlG').hide();
+    //ajax feedback
+    jQuery(document)
+        .ajaxStart(function() {
+            $loading.fadeIn();
+            jQuery('#loadingBackground').addClass('loading');
+        })
+        .ajaxStop(function() {
+            $loading.fadeOut();
+            jQuery('#loadingBackground').removeClass('loading');
+    });
+};
+wrUtils.filterTable = function(table) {
+	// Declare variables 
+	var input, filter, table, tr, td, i;
+	input = document.getElementById("tableFilterTxt");
+	filter = input.value.toUpperCase();
+	table = document.getElementById(table);
+	tr = table.getElementsByTagName("tr");
+  
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < tr.length; i++) {
+	  td = tr[i].getElementsByTagName("td")[0];
+	  if (td) {
+		if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+		  tr[i].style.display = "";
+		} else {
+		  tr[i].style.display = "none";
+		}
+	  } 
+	}
+	return;
+  }
